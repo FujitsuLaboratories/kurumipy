@@ -1,7 +1,6 @@
 import time
-import pickle
 import os
-import hashlib
+import file_operation as fo
 import func_analyzer
 
 memo_dir = "memocache/"
@@ -25,14 +24,6 @@ class Stopwatch(object):
         self.processing_time = self.end_time - self.start_time
         return self.processing_time
 
-# ファイル名に使用するハッシュ値(str型)を取得する
-def get_hash(*args):
-    hash_num = 0x0
-    for data in args:
-        print(data)
-        hash_num = int(hashlib.md5(data.to_bytes(2, 'big')).hexdigest(), 16) ^ hash_num
-    return str(hex(hash_num))
-
 # メモ化用のデコレータ
 def memo(function):
     def _memo(*args,**kwargs):
@@ -45,38 +36,34 @@ def memo(function):
         function_bytecode = function.__code__.co_code
 
         # キャッシュのファイル名用に引数のデータのハッシュ値を取得
-        cachefilename_hash = get_hash(*args)
+        cachefilename_hash = fo.get_hash(*args)
 
-        env_path = memo_dir + function.__name__ + '-env.pickle'
-        cache_path = memo_dir + function.__name__ + '-cache-' + cachefilename_hash + '.pickle'
+        func_dir = memo_dir + function.__name__ + '/'
+        env_path = func_dir + 'env.pickle'
+        cache_path = func_dir + 'cache-' + cachefilename_hash + '.pickle'
 
         # メモ化用のキャッシュを置くディレクトリがなければ作成
         if not os.path.isdir(memo_dir):
             os.makedirs(memo_dir)
+        if not os.path.isdir(func_dir):
+            os.makedirs(func_dir)
 
         cache_result = ''
         env_result = ''
         # envファイルがあればenvファイルに更新があるかチェックし、異なればenvファイル更新、キャッシュ更新
         if os.path.isfile(env_path):
-            with open(env_path, mode='rb') as f:
-                env_result = pickle.load(f)
-            # envファイルが更新されていないければ
+            env_result = fo.file_read(env_path)
             if(env_result == function_bytecode):
-                with open(cache_path, mode='rb') as f:
-                    cache_result = pickle.load(f)
+                cache_result = fo.file_read(cache_path)
             else:
-                with open(env_path, mode='wb') as f:
-                    pickle.dump(function_bytecode, f)
-                with open(cache_path, mode='wb') as f:
-                    cache_result = function(*args,**kwargs)
-                    pickle.dump(cache_result, f)
+                fo.file_write(env_path, function_bytecode)
+                cache_result = function(*args,**kwargs)
+                fo.file_write(cache_path, cache_result)
         # envファイルがなければenvファイルとキャッシュを作成
         else:
-            with open(env_path, mode='wb') as f:
-                pickle.dump(function_bytecode, f)
-            with open(cache_path, mode='wb') as f:
-                cache_result = function(*args,**kwargs)
-                pickle.dump(cache_result, f)
+            fo.file_write(env_path, function_bytecode)
+            cache_result = function(*args,**kwargs)
+            fo.file_write(cache_path, cache_result)
         return cache_result
     return _memo
 
