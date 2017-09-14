@@ -7,7 +7,6 @@ memo_dir = "memocache/"
 def get_hash(*args):
     hash_num = 0x0
     for data in args:
-        print(data)
         hash_num = int(hashlib.md5(data.to_bytes(2, 'big')).hexdigest(), 16) ^ hash_num
     return str(hex(hash_num))
 
