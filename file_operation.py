@@ -1,8 +1,6 @@
 import pickle
 import hashlib
 
-memo_dir = "memocache/"
-
 # ファイル名に使用するハッシュ値(str型)を取得する
 def get_hash(*args):
     hash_num = 0x0
