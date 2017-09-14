@@ -1,6 +1,7 @@
 import time
 import pickle
 import os
+import func_analyzer
 
 path = "sample.pickle"
 
@@ -29,8 +30,8 @@ def cache(function):
 
         print(dir(function))
         print(function.__name__)
-        print(dir(function.__code__.co_names))
         print(function.__code__.co_names)
+        print(func_analyzer.get_load_globals(function))
         print(*args)
 
         result = ''
