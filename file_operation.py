@@ -14,7 +14,8 @@ def get_hash(*args):
 # ファイルにデータをシリアライズして保存
 def file_write(path, data):
     with open(path, mode='wb') as f:
-        pickle.dump(data, f)    
+        pickle.dump(data, f)
+ 
 # ファイルからデータをデシリアライズして読み込み、返す
 def file_read(path):
     with open(path, mode='rb') as f:

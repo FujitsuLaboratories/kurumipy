@@ -53,8 +53,15 @@ def memo(function):
         # envファイルがあればenvファイルに更新があるかチェックし、異なればenvファイル更新、キャッシュ更新
         if os.path.isfile(env_path):
             env_result = fo.file_read(env_path)
+            # envファイルと差異がなく、かつ、キャッシュファイルがあればキャッシュを読み込み
             if(env_result == function_bytecode):
-                cache_result = fo.file_read(cache_path)
+                if os.path.isfile(cache_path):
+                    cache_result = fo.file_read(cache_path)
+                # キャッシュファイルがなければ、該当関数実行して、キャッシュを新規作成
+                else:
+                    cache_result = function(*args,**kwargs)
+                    fo.file_write(cache_path, cache_result)
+            # envファイルと差異があれば、envファイルを更新、該当関数実行して、キャッシュを新規作成 or 更新
             else:
                 fo.file_write(env_path, function_bytecode)
                 cache_result = function(*args,**kwargs)
