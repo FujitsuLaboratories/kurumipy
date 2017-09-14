@@ -7,5 +7,5 @@ python memo_decorator.py
 ```
 
 ```bash
-python -m unittest discover
+python -m unittest discover -p '*_test.py'
 ```

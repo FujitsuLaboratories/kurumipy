@@ -79,9 +79,19 @@ def get_load_globals(func):
     '''Get global variables used in given func
     It returns list of tupples of name and value.
     '''
-    g = []
-    for i in dis.get_instructions(func):
-        if i.opcode == 116: #LOAD_GLOBAL
-            if not is_builtin_function_name(i.argrepr):
-                g.append((i.argrepr, func.__globals__[i.argrepr]))
-    return g
+    return [
+        (i.argrepr, func.__globals__[i.argrepr])
+        for i in dis.get_instructions(func)
+        if i.opcode == 116 #LOAD_GLOBAL=116
+        if not is_builtin_function_name(i.argrepr)
+    ]
+
+def get_load_deref(func):
+    '''Get free variables used in given func
+    It returns list of tupples of name and value.
+    '''
+    return [
+        (i.argrepr, func.__closure__[i.arg].cell_contents)
+        for i in dis.get_instructions(func)
+        if i.opcode == 136 #LOAD_DEREF=136
+    ]
