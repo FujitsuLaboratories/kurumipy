@@ -19,7 +19,7 @@ You have to set environment variable only once until you exit bash or command pr
 ## Usage
 
 ```bash
-python memo_decorator.py
+python main.py
 ```
 
 ```bash
