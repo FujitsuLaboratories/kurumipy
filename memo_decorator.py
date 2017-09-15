@@ -24,8 +24,9 @@ def memo(function):
             os.makedirs(memo_dir)
 
         func_env = {}
-        # 関数のコードのバイトコードを取得
+        # 関数のコードのバイトコードとコード中で使用している定数のタプルを取得
         func_env['bytecode'] = function.__code__.co_code
+        func_env['consts'] = function.__code__.co_consts
         # 関数で使われているグローバル変数とレキシカル変数を取得
         func_env['globals'] = func_analyzer.get_load_globals(function)
         func_env['frees'] = func_analyzer.get_load_deref(function)
