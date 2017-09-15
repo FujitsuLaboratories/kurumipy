@@ -2,10 +2,8 @@ import pickle
 
 # ファイル名に使用するハッシュ値(str型)を取得する
 def get_hash(*args):
-    hash_num = 0x0
-    for data in args:
-        hash_num = hash(data) ^ hash_num
-    return str(hex(hash_num))
+    hash_num = hash(args)
+    return hex(hash_num)
 
 # ファイルにデータをシリアライズして保存
 def file_write(path, data):
