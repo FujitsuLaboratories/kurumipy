@@ -23,5 +23,8 @@ python main.py
 ```
 
 ```bash
+# bash
 python -m unittest discover -p '*_test.py'
+# Command prompt
+python -m unittest discover -p *_test.py
 ```
