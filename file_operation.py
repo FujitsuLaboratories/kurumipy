@@ -1,11 +1,10 @@
 import pickle
-import hashlib
 
 # ファイル名に使用するハッシュ値(str型)を取得する
 def get_hash(*args):
     hash_num = 0x0
     for data in args:
-        hash_num = int(hashlib.md5(data.to_bytes(2, 'big')).hexdigest(), 16) ^ hash_num
+        hash_num = data.__hash__() ^ hash_num
     return str(hex(hash_num))
 
 # ファイルにデータをシリアライズして保存
