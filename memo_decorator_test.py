@@ -114,3 +114,11 @@ class TestMemoDecorator(unittest.TestCase):
         self.assertEqual(p.calls, 3)
         p.tuple_hash((1, "aaa"))
         self.assertEqual(p.calls, 3)
+
+    def test_deffensive_against_collision(self):
+        @memo_decorator.memo
+        def sum(i, j):
+            return i + j
+        self.assertEqual(sum(0, 0), 0)
+        self.assertEqual(sum(0, 1), 1)
+        self.assertEqual(sum(1, 1), 2)
