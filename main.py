@@ -55,8 +55,15 @@ if __name__ == '__main__':
     print('[memo_test] 2 回目: %f 秒' % sw.stop())
     print(str(result) + '\n')
 
+    sw.start()
+    result = memo_test2(1, 2, 3)
+    print('[memo_test2] 1 回目: %f 秒' % sw.stop())
+    print(str(result) + '\n')
+
+    '''
     test_args = testArgs('windsurfing-001.csv', 200, 'lowpass')
     sw.start()
     result = memo_test2(test_args.filename, 2, 1)
     print('[memo_test2] 1 回目: %f 秒' % sw.stop())
     print(str(result) + '\n')
+    '''
