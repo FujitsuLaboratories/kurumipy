@@ -122,3 +122,31 @@ class TestMemoDecorator(unittest.TestCase):
         self.assertEqual(sum(0, 0), 0)
         self.assertEqual(sum(0, 1), 1)
         self.assertEqual(sum(1, 1), 2)
+
+    def test_redefining_function(self):
+        # same constants but different byte code
+        if True:
+            @memo_decorator.memo
+            def f(n):
+                return n+100
+            self.assertEqual(101, f(1))
+            self.assertEqual(102, f(2))
+        if True:
+            @memo_decorator.memo
+            def f(n):
+                return n-100
+            self.assertEqual(-99, f(1))
+            self.assertEqual(-98, f(2))
+        # same byte code but different constants
+        if True:
+            @memo_decorator.memo
+            def g(n):
+                return n+10
+            self.assertEqual(11, g(1))
+            self.assertEqual(12, g(2))
+        if True:
+            @memo_decorator.memo
+            def g(n):
+                return n+100
+            self.assertEqual(101, g(1))
+            self.assertEqual(102, g(2))
