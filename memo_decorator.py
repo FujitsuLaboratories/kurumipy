@@ -1,4 +1,5 @@
 import os
+import re
 import shutil
 import file_operation as fo
 import func_analyzer
@@ -16,7 +17,8 @@ def memo(function):
         # キャッシュのファイル名用に引数のデータのハッシュ値を取得
         cachefilename_hash = fo.get_hash(*args)
         # キャッシュファイル関係のパス名生成
-        func_dir = memo_dir + function.__name__ + '/'
+        qualified_name = function.__qualname__
+        func_dir = memo_dir + re.sub(r'[<>]', '_', qualified_name) + '/'
         env_path = func_dir + 'env.pickle'
         cache_path = func_dir + 'cache-' + cachefilename_hash + '.pickle'
         # メモ化用のキャッシュを置くディレクトリがなければ作成
