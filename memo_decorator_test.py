@@ -150,3 +150,10 @@ class TestMemoDecorator(unittest.TestCase):
                 return n+100
             self.assertEqual(101, g(1))
             self.assertEqual(102, g(2))
+
+    def test_list_comprehension_in_function(self):
+        @memo_decorator.memo
+        def f(n):
+            l = [i for i in range(0, n+1)]
+            return sum(l)
+        self.assertEqual(55, f(10))
