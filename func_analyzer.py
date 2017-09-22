@@ -7,19 +7,31 @@ def get_load_globals(func):
     '''Get global variables used in given func
     It returns list of tupples of name and value.
     '''
-    return [
-        (i.argrepr, func.__globals__[i.argrepr])
+    reprs = [
+        i.argrepr
         for i in dis.get_instructions(func)
         if i.opcode == op_load_global
         if i.argrepr in func.__globals__
+    ]
+    # Make unique and preserve ordering
+    reprs_uniq = sorted(set(reprs), key=reprs.index)
+    return [
+        (r, func.__globals__[r])
+        for r in reprs_uniq
     ]
 
 def get_load_deref(func):
     '''Get free variables used in given func
     It returns list of tupples of name and value.
     '''
-    return [
-        (i.argrepr, func.__closure__[i.arg].cell_contents)
+    insts = [
+        (i.argrepr, i.arg)
         for i in dis.get_instructions(func)
         if i.opcode == op_load_deref
+    ]
+    # Make unique and preserve ordering
+    insts_uniq = sorted(set(insts), key=insts.index)
+    return [
+        (i[0], func.__closure__[i[1]].cell_contents)
+        for i in insts_uniq
     ]
