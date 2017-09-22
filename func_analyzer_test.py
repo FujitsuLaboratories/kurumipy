@@ -17,6 +17,11 @@ class TestFuncAnalyzer(unittest.TestCase):
             t1 = g1
             t3 = g3
         self.assertEqual([("g1", 1), ("g3", 3)], func_analyzer.get_load_globals(get))
+        def get_multiple_times():
+            t1 = g1
+            t2 = g1
+            t3 = g1
+        self.assertEqual([("g1", 1)], func_analyzer.get_load_globals(get_multiple_times))
         def get_local():
             t1 = l1 # should not be reported because it is a free variable
         self.assertEqual([], func_analyzer.get_load_globals(get_local))
@@ -45,6 +50,11 @@ class TestFuncAnalyzer(unittest.TestCase):
             t1 = l1
             t3 = l3
         self.assertEqual([("l1", 1), ("l3", 3)], func_analyzer.get_load_deref(get))
+        def get_multiple_times():
+            t1 = l1
+            t2 = l1
+            t3 = l1
+        self.assertEqual([("l1", 1)], func_analyzer.get_load_deref(get_multiple_times))
         l1 = 11
         self.assertEqual([("l1", 11), ("l3", 3)], func_analyzer.get_load_deref(get))
         def set():
