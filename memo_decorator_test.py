@@ -157,3 +157,19 @@ class TestMemoDecorator(unittest.TestCase):
             l = [i for i in range(0, n+1)]
             return sum(l)
         self.assertEqual(55, f(10))
+
+    def test_recursive_function(self):
+        @memo_decorator.memo
+        def f(n):
+            if n <= 0:
+                return 0
+            return n + f(n-1)
+        self.assertEqual(55, f(10))
+
+    def test_tail_recursive_function(self):
+        @memo_decorator.memo
+        def f(n, s=0):
+            if n <= 0:
+                return s
+            return f(n-1, s+n)
+        self.assertEqual(55, f(10))

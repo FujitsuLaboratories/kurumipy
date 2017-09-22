@@ -7,6 +7,12 @@ import func_analyzer
 # メモ化のキャッシュファイル置き場ディレクトリのパス
 memo_dir = "memocache/"
 
+def key_value_list_to_dict(l):
+    d = dict()
+    for i in l:
+        d[i[0]] = hash(i[1])
+    return d
+
 # メモ化用のデコレータ
 def memo(function):
     def _memo(*args,**kwargs):
@@ -30,8 +36,8 @@ def memo(function):
         func_env['bytecode'] = function.__code__.co_code
         func_env['consts'] = hash(function.__code__.co_consts)
         # 関数で使われているグローバル変数とレキシカル変数を取得
-        func_env['globals'] = func_analyzer.get_load_globals(function)
-        func_env['frees'] = func_analyzer.get_load_deref(function)
+        func_env['globals'] = key_value_list_to_dict(func_analyzer.get_load_globals(function))
+        func_env['frees'] = key_value_list_to_dict(func_analyzer.get_load_deref(function))
 
         cache_result = ''
         # envファイルがあればenvファイルに更新があるかチェックし、異なればenvファイル更新、該当関数内のenvとキャッシュファイルを全削除、キャッシュ新規作成
