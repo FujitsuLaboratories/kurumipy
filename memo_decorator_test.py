@@ -165,20 +165,34 @@ class TestMemoDecorator(unittest.TestCase):
         self.assertEqual(55, f(10))
 
     def test_recursive_function(self):
+        free = time.time()
         @memo_decorator.memo
         def f(n):
+            dummy = free
             if n <= 0:
                 return 0
             return n + f(n-1)
+        f(0)
+        initial_invalidates = f.invalidates
         self.assertEqual(55, f(10))
+        self.assertEqual((1+10+1, 1, initial_invalidates), get_stats(f))
+        self.assertEqual(15, f(5))
+        self.assertEqual((1+10+1+1, 2, initial_invalidates), get_stats(f))
 
     def test_tail_recursive_function(self):
+        free = time.time()
         @memo_decorator.memo
         def f(n, s=0):
+            dummy = free
             if n <= 0:
                 return s
             return f(n-1, s+n)
+        f(0)
+        initial_invalidates = f.invalidates
         self.assertEqual(55, f(10))
+        self.assertEqual((1+10+1, 0, initial_invalidates), get_stats(f))
+        self.assertEqual(15, f(5))
+        self.assertEqual((1+10+1+5+1, 0, initial_invalidates), get_stats(f))
 
     def test_global_function_usage(self):
         @memo_decorator.memo
