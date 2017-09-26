@@ -24,7 +24,7 @@ def key_value_list_to_dict(l):
 # メモ化用のデコレータ
 def memo(function):
     def _memo(*args,**kwargs):
-
+        _memo.calls += 1
         # print(dir(function))
         print(func_analyzer.get_load_globals(function))
 
@@ -54,6 +54,7 @@ def memo(function):
             # envファイルと差異がなく、かつ、キャッシュファイルがあればキャッシュを読み込み
             if(env_result == func_env):
                 if os.path.isfile(cache_path):
+                    _memo.hits += 1
                     cache_result = fo.file_read(cache_path)
                 # キャッシュファイルがなければ、該当関数を実行して、キャッシュを新規作成
                 else:
@@ -62,6 +63,7 @@ def memo(function):
             # envファイルと差異があれば、該当関数内のenvとキャッシュファイルを全削除し、envファイルを新規作成、該当関数を実行して、キャッシュを新規作成
             else:
                 # 関数フォルダを削除
+                _memo.invalidates += 1
                 shutil.rmtree(func_dir)
                 os.makedirs(func_dir)
                 fo.file_write(env_path, func_env)
@@ -75,4 +77,7 @@ def memo(function):
             cache_result = function(*args,**kwargs)
             fo.file_write(cache_path, cache_result)
         return cache_result
+    _memo.calls = 0
+    _memo.hits = 0
+    _memo.invalidates = 0
     return _memo
