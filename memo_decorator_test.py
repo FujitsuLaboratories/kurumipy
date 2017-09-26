@@ -3,6 +3,9 @@ import memo_decorator
 
 g1 = 1
 
+def gf(x):
+    return x
+
 class DecoratedCounter():
     def __init__(self, name):
         self.name = name
@@ -52,9 +55,10 @@ class TestMemoDecorator(unittest.TestCase):
         self.assertEqual(r, (3, 1, 2))
         r = counter.count(2)
         self.assertEqual(r, (4, 2, 2))
-        g1 = 1
+        g1 = 3
         r = counter.count(1)
-        self.assertEqual(r, (5, 1, 1))
+        self.assertEqual(r, (5, 1, 3))
+        g1 = 1
 
     def test_free_variable_changes(self):
         free = 1
@@ -173,3 +177,10 @@ class TestMemoDecorator(unittest.TestCase):
                 return s
             return f(n-1, s+n)
         self.assertEqual(55, f(10))
+
+    def test_global_function_usage(self):
+        @memo_decorator.memo
+        def f(x):
+            return gf(x)
+        self.assertEqual(1, f(1))
+        self.assertEqual(2, f(2))

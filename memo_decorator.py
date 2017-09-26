@@ -10,7 +10,12 @@ memo_dir = "memocache/"
 def key_value_list_to_dict(l):
     d = dict()
     for i in l:
-        d[i[0]] = hash(i[1])
+        h = 0
+        if callable(i[1]):
+            h = hash(i[1].__code__.co_code)
+        else:
+            h = hash(i[1])
+        d[i[0]] = h
     return d
 
 # メモ化用のデコレータ
