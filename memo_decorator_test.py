@@ -193,3 +193,9 @@ class TestMemoDecorator(unittest.TestCase):
                 return x+y
             return reduce(add, args)
         self.assertEqual(6, f(1, 2, 3))
+
+    def test_class_usage(self):
+        @memo_decorator.memo
+        def f(s):
+            return DecoratedCounter.__name__ + s
+        self.assertEqual("DecoratedCounter-1", f("-1"))
