@@ -1,5 +1,5 @@
 import unittest
-import func_analyzer
+import memoization.func_analyzer as func_analyzer
 
 g1 = 1
 g2 = 2

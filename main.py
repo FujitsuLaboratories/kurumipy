@@ -1,5 +1,5 @@
 import time
-import memo_decorator
+import memoization.memo_decorator as memo_decorator
 
 # 計算時間を測るストップウォッチ（下記URLのコードのコピペ）
 # http://momijiame.tumblr.com/post/62619539929/python-%E3%81%A7%E3%83%87%E3%82%B3%E3%83%AC%E3%83%BC%E3%82%BF%E3%82%92%E4%BD%BF%E3%81%A3%E3%81%A6%E9%96%A2%E6%95%B0%E3%81%AE%E8%A8%88%E7%AE%97%E7%B5%90%E6%9E%9C%E3%82%92%E3%82%AD%E3%83%A3%E3%83%83%E3%82%B7%E3%83%A5%E3%81%99%E3%82%8B

@@ -1,5 +1,5 @@
 import unittest
-import memo_decorator
+import memoization.memo_decorator as memo_decorator
 import time
 from functools import reduce
 
