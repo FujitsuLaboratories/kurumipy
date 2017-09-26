@@ -1,4 +1,3 @@
-import types
 import os
 import re
 import shutil
@@ -12,10 +11,11 @@ def key_value_list_to_dict(l):
     d = dict()
     for i in l:
         h = 0
-        if isinstance(i[1], types.BuiltinFunctionType) or isinstance(i[1], types.BuiltinMethodType):
-            h = hash(i[1].__name__)
-        elif callable(i[1]):
-            h = hash(i[1].__code__.co_code)
+        if callable(i[1]):
+            try:
+                h = hash(i[1].__code__.co_code)
+            except AttributeError:
+                h = hash(i[1].__name__)
         else:
             h = hash(i[1])
         d[i[0]] = h
