@@ -1,5 +1,6 @@
 import unittest
 import memo_decorator
+from functools import reduce
 
 g1 = 1
 
@@ -184,3 +185,11 @@ class TestMemoDecorator(unittest.TestCase):
             return gf(x)
         self.assertEqual(1, f(1))
         self.assertEqual(2, f(2))
+
+    def test_reduce_usage(self):
+        @memo_decorator.memo
+        def f(*args):
+            def add(x, y):
+                return x+y
+            return reduce(add, args)
+        self.assertEqual(6, f(1, 2, 3))
