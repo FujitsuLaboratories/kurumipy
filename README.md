@@ -28,3 +28,30 @@ python -m unittest discover -p '*_test.py'
 # Command prompt
 python -m unittest discover -p *_test.py
 ```
+
+## How to apply to other projects
+
+Copy the 'memoization folder' to apply project.
+
+Import the copied module.
+
+```python
+import memoization.memo_decorator as memo_decorator
+```
+
+Write a decorator in a function that applies memoization.
+
+```python
+@memo_decorator.memo
+def applied_function(n):
+    ...
+```
+
+The applicable function has the following restrictions.
+
+* Pure function
+* Arguments are string type, numeric type, etc.(Not supported: list type, dict type, set type etc.)
+
+The cache data output folder is as follows.
+
+* \memoization\memocache\
