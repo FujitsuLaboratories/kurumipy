@@ -50,7 +50,7 @@ def applied_function(n):
 The applicable function has the following restrictions.
 
 * Pure function
-* Arguments are string type, numeric type, etc.(Not supported: list type, dict type, set type etc.)
+* Arguments are string type, numeric type, etc. (Not supported: list type, dict type, set type, file objects etc.)
 
 The cache data output folder is as follows.
 
