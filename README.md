@@ -1,4 +1,8 @@
-# memoization
+# KurumiPy
+
+KurumiPy is an enhanced memoization library.
+
+Kurumi stands for walnut in Japanese. They say walnuts improve memory.
 
 ## Disabling salt
 
