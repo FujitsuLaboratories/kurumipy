@@ -22,8 +22,16 @@ def key_value_list_to_dict(l):
         d[i[0]] = h
     return d
 
+memo_dir_lock = threading.Lock()
+
 # メモ化用のデコレータ
 def memo(function):
+    # メモ化用のキャッシュを置くディレクトリがなければ作成
+    if not os.path.isdir(memo_dir):
+        with memo_dir_lock:
+            if not os.path.isdir(memo_dir):
+                os.makedirs(memo_dir)
+
     def _memo(*args,**kwargs):
         _memo.calls += 1
         # print(dir(function))
@@ -36,9 +44,6 @@ def memo(function):
         func_dir = memo_dir + re.sub(r'[<>]', '_', qualified_name) + '/'
         env_path = func_dir + 'env.pickle'
         cache_path = func_dir + 'cache-' + cachefilename_hash + '.pickle'
-        # メモ化用のキャッシュを置くディレクトリがなければ作成
-        if not os.path.isdir(memo_dir):
-            os.makedirs(memo_dir)
 
         func_env = {}
         # 関数のコードのバイトコードとコード中で使用している定数のタプルを取得
