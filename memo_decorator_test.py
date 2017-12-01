@@ -2,6 +2,7 @@ import unittest
 import memoization.memo_decorator as memo_decorator
 import time
 from functools import reduce
+import threading
 
 def get_stats(f):
     return (f.calls, f.hits, f.invalidates)
@@ -214,3 +215,37 @@ class TestMemoDecorator(unittest.TestCase):
         def f(s):
             return GlobalClass.__name__ + s
         self.assertEqual("GlobalClass-1", f("-1"))
+
+    def test_multithread_safety(self):
+        free = 0
+        @memo_decorator.memo
+        def f(i):
+            return free + i
+        class Caller(threading.Thread):
+            def __init__(self):
+                threading.Thread.__init__(self)
+                self.stopRequested = False
+                self.lastError = None
+            def run(self):
+                i = 0
+                while not self.stopRequested:
+                    try:
+                        f(i)
+                    except Exception as e:
+                        self.lastError = e
+                    i += 1
+                    if i > 100:
+                        i = 0
+            def stop(self):
+                self.stopRequested = True
+        callers = [Caller(), Caller()]
+        for t in callers:
+            t.start()
+        for i in range(10):
+            time.sleep(0.1)
+            free = i
+        for t in callers:
+            t.stop()
+            t.join()
+        for t in callers:
+            self.assertIsNone(t.lastError)
