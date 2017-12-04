@@ -2,7 +2,7 @@ import os
 import re
 import shutil
 import threading
-from .file_operation import get_hash, file_write, file_read
+from .file_operation import get_hash, file_write, file_read, try_file_read
 from .func_analyzer import get_load_globals, get_load_deref
 
 # メモ化のキャッシュファイル置き場ディレクトリのパス
@@ -56,8 +56,8 @@ def memo(function):
         cache_result = ''
         with _memo.lock:
             # envファイルがあればenvファイルに更新があるかチェックし、異なればenvファイル更新、該当関数内のenvとキャッシュファイルを全削除、キャッシュ新規作成
-            if os.path.isfile(env_path):
-                env_result = file_read(env_path)
+            is_file, env_result = try_file_read(env_path)
+            if is_file:
                 # envファイルと差異がなく、かつ、キャッシュファイルがあればキャッシュを読み込み
                 if(env_result == func_env):
                     if os.path.isfile(cache_path):

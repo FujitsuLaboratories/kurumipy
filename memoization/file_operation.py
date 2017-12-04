@@ -1,3 +1,4 @@
+import os
 import pickle
 
 # ファイル名に使用するハッシュ値(str型)を取得する
@@ -9,9 +10,17 @@ def get_hash(*args):
 def file_write(path, data):
     with open(path, mode='wb') as f:
         pickle.dump(data, f)
- 
+
 # ファイルからデータをデシリアライズして読み込み、返す
 def file_read(path):
     with open(path, mode='rb') as f:
         result = pickle.load(f)
     return result 
+
+# ファイルの存在確認をし、ファイルがあればファイルからデータをデシリアライズして読み込み、返す
+def try_file_read(path):
+    if os.path.isfile(path):
+        with open(path, mode='rb') as f:
+            result = pickle.load(f)
+            return True, result
+    return False, None
