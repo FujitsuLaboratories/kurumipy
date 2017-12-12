@@ -1,5 +1,6 @@
 import time
 import memoization.memo_decorator as memo_decorator
+import threading
 
 # 計算時間を測るストップウォッチ（下記URLのコードのコピペ）
 # http://momijiame.tumblr.com/post/62619539929/python-%E3%81%A7%E3%83%87%E3%82%B3%E3%83%AC%E3%83%BC%E3%82%BF%E3%82%92%E4%BD%BF%E3%81%A3%E3%81%A6%E9%96%A2%E6%95%B0%E3%81%AE%E8%A8%88%E7%AE%97%E7%B5%90%E6%9E%9C%E3%82%92%E3%82%AD%E3%83%A3%E3%83%83%E3%82%B7%E3%83%A5%E3%81%99%E3%82%8B
@@ -42,9 +43,40 @@ class testArgs:
         self.sampling_rate = sampling_rate
         self.selected_filter = selected_filter
 
+free = 0
+@memo_decorator.memo
+def f(i):
+    return free + i
+class Caller(threading.Thread):
+    def __init__(self):
+        threading.Thread.__init__(self)
+        self.stopRequested = False
+        self.lastError = None
+    def run(self):
+        i = 0
+        while not self.stopRequested:
+            try:
+                f(i)
+            except Exception as e:
+                self.lastError = e
+            i += 1
+            if i > 100:
+                i = 0
+    def stop(self):
+        self.stopRequested = True
+
+
+@memo_decorator.memo
+def fda(n):
+    dummy = 2
+    if n <= 0:
+        return 0
+    return n + fda(n-1)
+
 if __name__ == '__main__':
     sw = Stopwatch()
 
+    
     sw.start()
     result = memo_test(2)
     print('[memo_test] 1 回目: %f 秒' % sw.stop())
@@ -59,11 +91,29 @@ if __name__ == '__main__':
     result = memo_test2(1, 2, 3)
     print('[memo_test2] 1 回目: %f 秒' % sw.stop())
     print(str(result) + '\n')
+    
 
-    '''
+    
     test_args = testArgs('windsurfing-001.csv', 200, 'lowpass')
     sw.start()
     result = memo_test2(test_args.filename, 2, 1)
     print('[memo_test2] 1 回目: %f 秒' % sw.stop())
     print(str(result) + '\n')
-    '''
+    
+
+
+    
+    callers = [Caller(), Caller(), Caller()]
+    for t in callers:
+        t.start()
+    for i in range(10):
+        time.sleep(0.1)
+        free = i
+    for t in callers:
+        t.stop()
+        t.join()
+    for t in callers:
+       print(t.lastError)
+    
+
+    fda(3)
