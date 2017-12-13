@@ -25,7 +25,38 @@ def key_value_list_to_dict(l):
 
 memo_dir_lock = threading.Lock()
 
-class LockTemp: pass # ロック用の情報を一時保存するクラス
+class ReentrantInterprocessLock():
+    def __init__(self, lock_path):
+        self.lock_path = lock_path
+        self.interprocess_lock = fasteners.InterProcessLock(lock_path)
+        self.condition = threading.Condition()
+        self.thread_id = 0
+        self.recursion_count = 0
+
+    def __enter__(self):
+        ident = threading.get_ident()
+        while True:
+            with self.condition:
+                if self.thread_id != 0 and self.thread_id != ident:
+                    self.condition.wait()
+                else:
+                    if self.thread_id == ident:
+                        self.recursion_count += 1
+                    else:
+                        self.thread_id = ident
+                        self.recursion_count = 1
+                        self.interprocess_lock.__enter__()
+                    return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        with self.condition:
+            self.recursion_count -= 1
+            if self.recursion_count == 0:
+                self.thread_id = 0
+                self.condition.notify_all()
+                return self.interprocess_lock.__exit__(exc_type, exc_val, exc_tb)
+            else:
+                return False
 
 # メモ化用のデコレータ
 def memo(function):
@@ -35,6 +66,13 @@ def memo(function):
             if not os.path.isdir(memo_dir):
                 os.makedirs(memo_dir)
 
+    # キャッシュファイル関係のパス名生成
+    qualified_name = function.__qualname__
+    escaped_qname = re.sub(r'[<>]', '_', qualified_name)
+    func_dir = os.path.join(memo_dir, escaped_qname)
+    env_path = os.path.join(func_dir, 'env.pickle')
+    lock_path = os.path.join(memo_dir, escaped_qname + '.-lock')
+
     def _memo(*args, **kwargs):
         _memo.calls += 1
         # print(dir(function))
@@ -42,13 +80,7 @@ def memo(function):
 
         # キャッシュのファイル名用に引数のデータのハッシュ値を取得
         cachefilename_hash = get_hash(*args)
-        # キャッシュファイル関係のパス名生成
-        qualified_name = function.__qualname__
-        escaped_qname = re.sub(r'[<>]', '_', qualified_name)
-        func_dir = os.path.join(memo_dir, escaped_qname)
-        env_path = os.path.join(func_dir, 'env.pickle')
         cache_path = os.path.join(func_dir, 'cache-' + cachefilename_hash + '.pickle')
-        lock_path = os.path.join(memo_dir, escaped_qname + '.-lock')
 
         func_env = {}
         # 関数のコードのバイトコードとコード中で使用している定数のタプルを取得
@@ -58,12 +90,7 @@ def memo(function):
         func_env['globals'] = key_value_list_to_dict(get_load_globals(function))
         func_env['frees'] = key_value_list_to_dict(get_load_deref(function))
 
-        threadid = str(threading.get_ident())
-        recursion_cnt = 0
-        if hasattr(_memo.lock_temp, threadid):
-            recursion_cnt = getattr(_memo.lock_temp, threadid)
-
-        def call_memoized_function():
+        with _memo.lock:
             cache_result = None
             # envファイルがあればenvファイルに更新があるかチェックし、異なればenvファイル更新、該当関数内のenvとキャッシュファイルを全削除、キャッシュ新規作成
             is_file, env_result = try_file_read(env_path)
@@ -94,25 +121,9 @@ def memo(function):
                 cache_result = function(*args, **kwargs)
                 file_write(cache_path, cache_result)
             return cache_result
-
-        if recursion_cnt == 0:
-            with fasteners.InterProcessLock(lock_path):
-                setattr(_memo.lock_temp, threadid, 1)
-                try:
-                    return call_memoized_function()
-                finally:
-                    delattr(_memo.lock_temp, threadid)
-        else:
-            recursion_cnt += 1
-            setattr(_memo.lock_temp, threadid, recursion_cnt)
-            try:
-                return call_memoized_function()
-            finally:
-                recursion_cnt -= 1
-                setattr(_memo.lock_temp, threadid, recursion_cnt)
     _memo.calls = 0
     _memo.hits = 0
     _memo.invalidates = 0
-    _memo.lock_temp = LockTemp()
+    _memo.lock = ReentrantInterprocessLock(lock_path)
 
     return _memo
