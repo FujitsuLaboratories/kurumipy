@@ -7,7 +7,7 @@ from .file_operation import get_hash, file_write, file_read, try_file_read
 from .func_analyzer import get_load_globals, get_load_deref
 
 # メモ化のキャッシュファイル置き場ディレクトリのパス
-memo_dir = os.path.dirname(__file__) + '/memocache/'
+memo_dir = os.path.join(os.path.dirname(__file__), 'memocache')
 
 def key_value_list_to_dict(l):
     d = dict()
@@ -44,9 +44,11 @@ def memo(function):
         cachefilename_hash = get_hash(*args)
         # キャッシュファイル関係のパス名生成
         qualified_name = function.__qualname__
-        func_dir = memo_dir + re.sub(r'[<>]', '_', qualified_name) + '/'
-        env_path = func_dir + 'env.pickle'
-        cache_path = func_dir + 'cache-' + cachefilename_hash + '.pickle'
+        escaped_qname = re.sub(r'[<>]', '_', qualified_name)
+        func_dir = os.path.join(memo_dir, escaped_qname)
+        env_path = os.path.join(func_dir, 'env.pickle')
+        cache_path = os.path.join(func_dir, 'cache-' + cachefilename_hash + '.pickle')
+        lock_path = os.path.join(memo_dir, escaped_qname + '.-lock')
 
         func_env = {}
         # 関数のコードのバイトコードとコード中で使用している定数のタプルを取得
@@ -94,7 +96,7 @@ def memo(function):
             return cache_result
 
         if recursion_cnt == 0:
-            with fasteners.InterProcessLock(os.path.dirname(__file__) + '/tmp/lockfile/' + re.sub(r'[<>]', '_', qualified_name) +'.lock'):
+            with fasteners.InterProcessLock(lock_path):
                 setattr(_memo.lock_temp, threadid, 1)
                 try:
                     return call_memoized_function()
