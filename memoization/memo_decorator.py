@@ -35,7 +35,7 @@ def memo(function):
             if not os.path.isdir(memo_dir):
                 os.makedirs(memo_dir)
 
-    def _memo(*args,**kwargs):
+    def _memo(*args, **kwargs):
         _memo.calls += 1
         # print(dir(function))
         # print(get_load_globals(function))
@@ -58,60 +58,22 @@ def memo(function):
 
         threadid = str(threading.get_ident())
         recursion_cnt = 0
-        if(hasattr(_memo.lock_temp, threadid)):
+        if hasattr(_memo.lock_temp, threadid):
             recursion_cnt = getattr(_memo.lock_temp, threadid)
 
-        cache_result = ''
-        if(recursion_cnt == 0):
-            with fasteners.InterProcessLock(os.path.dirname(__file__) + '/tmp/lockfile/' + re.sub(r'[<>]', '_', qualified_name) +'.lock'):
-                recursion_cnt += 1
-                setattr(_memo.lock_temp, threadid, recursion_cnt)
-                # envファイルがあればenvファイルに更新があるかチェックし、異なればenvファイル更新、該当関数内のenvとキャッシュファイルを全削除、キャッシュ新規作成
-                is_file, env_result = try_file_read(env_path)
-                if is_file:
-                    # envファイルと差異がなく、かつ、キャッシュファイルがあればキャッシュを読み込み
-                    if(env_result == func_env):
-                        if os.path.isfile(cache_path):
-                            _memo.hits += 1
-                            cache_result = file_read(cache_path)
-                        # キャッシュファイルがなければ、該当関数を実行して、キャッシュを新規作成
-                        else:
-                            cache_result = function(*args,**kwargs)
-                            file_write(cache_path, cache_result)
-                    # envファイルと差異があれば、該当関数内のenvとキャッシュファイルを全削除し、envファイルを新規作成、該当関数を実行して、キャッシュを新規作成
-                    else:
-                        # 関数フォルダを削除
-                        _memo.invalidates += 1
-                        shutil.rmtree(func_dir)
-                        os.makedirs(func_dir)
-                        file_write(env_path, func_env)
-                        cache_result = function(*args,**kwargs)
-                        file_write(cache_path, cache_result)
-                # envファイルがなければenvファイルとキャッシュを作成
-                else:
-                    if not os.path.isdir(func_dir):
-                        os.makedirs(func_dir)
-                    file_write(env_path, func_env)
-                    cache_result = function(*args,**kwargs)
-                    file_write(cache_path, cache_result)
-                recursion_cnt -= 1
-                setattr(_memo.lock_temp, threadid, recursion_cnt)
-                delattr(_memo.lock_temp, threadid)
-                return cache_result
-        else:
-            recursion_cnt += 1
-            setattr(_memo.lock_temp, threadid, recursion_cnt)
+        def call_memoized_function():
+            cache_result = None
             # envファイルがあればenvファイルに更新があるかチェックし、異なればenvファイル更新、該当関数内のenvとキャッシュファイルを全削除、キャッシュ新規作成
             is_file, env_result = try_file_read(env_path)
             if is_file:
                 # envファイルと差異がなく、かつ、キャッシュファイルがあればキャッシュを読み込み
-                if(env_result == func_env):
+                if env_result == func_env:
                     if os.path.isfile(cache_path):
                         _memo.hits += 1
                         cache_result = file_read(cache_path)
                     # キャッシュファイルがなければ、該当関数を実行して、キャッシュを新規作成
                     else:
-                        cache_result = function(*args,**kwargs)
+                        cache_result = function(*args, **kwargs)
                         file_write(cache_path, cache_result)
                 # envファイルと差異があれば、該当関数内のenvとキャッシュファイルを全削除し、envファイルを新規作成、該当関数を実行して、キャッシュを新規作成
                 else:
@@ -120,22 +82,35 @@ def memo(function):
                     shutil.rmtree(func_dir)
                     os.makedirs(func_dir)
                     file_write(env_path, func_env)
-                    cache_result = function(*args,**kwargs)
+                    cache_result = function(*args, **kwargs)
                     file_write(cache_path, cache_result)
             # envファイルがなければenvファイルとキャッシュを作成
             else:
                 if not os.path.isdir(func_dir):
                     os.makedirs(func_dir)
                 file_write(env_path, func_env)
-                cache_result = function(*args,**kwargs)
+                cache_result = function(*args, **kwargs)
                 file_write(cache_path, cache_result)
-            recursion_cnt -= 1
-            setattr(_memo.lock_temp, threadid, recursion_cnt)
             return cache_result
+
+        if recursion_cnt == 0:
+            with fasteners.InterProcessLock(os.path.dirname(__file__) + '/tmp/lockfile/' + re.sub(r'[<>]', '_', qualified_name) +'.lock'):
+                setattr(_memo.lock_temp, threadid, 1)
+                try:
+                    return call_memoized_function()
+                finally:
+                    delattr(_memo.lock_temp, threadid)
+        else:
+            recursion_cnt += 1
+            setattr(_memo.lock_temp, threadid, recursion_cnt)
+            try:
+                return call_memoized_function()
+            finally:
+                recursion_cnt -= 1
+                setattr(_memo.lock_temp, threadid, recursion_cnt)
     _memo.calls = 0
     _memo.hits = 0
     _memo.invalidates = 0
-    _memo.lock = threading.RLock()
     _memo.lock_temp = LockTemp()
-    
+
     return _memo
