@@ -65,17 +65,14 @@ class Caller(threading.Thread):
     def stop(self):
         self.stopRequested = True
 
-
 @memo_decorator.memo
-def fda(n):
-    dummy = 2
+def recursion(n):
     if n <= 0:
         return 0
-    return n + fda(n-1)
+    return n + recursion(n-1)
 
 if __name__ == '__main__':
     sw = Stopwatch()
-
     
     sw.start()
     result = memo_test(2)
@@ -92,17 +89,15 @@ if __name__ == '__main__':
     print('[memo_test2] 1 回目: %f 秒' % sw.stop())
     print(str(result) + '\n')
     
-
-    
+    '''
     test_args = testArgs('windsurfing-001.csv', 200, 'lowpass')
     sw.start()
     result = memo_test2(test_args.filename, 2, 1)
     print('[memo_test2] 1 回目: %f 秒' % sw.stop())
     print(str(result) + '\n')
-    
+    '''
 
-
-    
+    # 1プロセス複数スレッド処理   
     callers = [Caller(), Caller(), Caller()]
     for t in callers:
         t.start()
@@ -114,6 +109,6 @@ if __name__ == '__main__':
         t.join()
     for t in callers:
        print(t.lastError)
-    
 
-    fda(3)
+    # 再帰呼び出し
+    recursion(2)
