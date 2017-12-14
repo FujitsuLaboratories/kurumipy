@@ -70,17 +70,24 @@ class TestMemoDecorator(unittest.TestCase):
         self.assertEqual(get_stats(f), (7, 2, initial_invalidates + 3))
 
     def test_same_method_of_different_instances(self):
+        free = 0
         class C:
             @memo_decorator.memo
             def f(self):
-                pass
+                return free
         c1, c2 = C(), C()
+
+        # to invalidate cache
+        free = time.time()
         c1.f()
-        self.assertEqual(get_stats(c1.f), (1, 0, 0))
+        initial_invalidates = c1.f.invalidates
+
+        c1.f()
+        self.assertEqual(get_stats(c1.f), (2, 1, initial_invalidates))
         c2.f()
-        self.assertEqual(get_stats(c2.f), (2, 0, 0))
+        self.assertEqual(get_stats(c2.f), (3, 1, initial_invalidates))
         c1.f()
-        self.assertEqual(get_stats(c1.f), (3, 1, 0))
+        self.assertEqual(get_stats(c1.f), (4, 2, initial_invalidates))
 
     def test_equality_of_different_string_instances(self):
         free = time.time()
