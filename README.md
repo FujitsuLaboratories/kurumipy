@@ -20,6 +20,18 @@ set PYTHONHASHSEED=0
 
 You have to set environment variable only once until you exit bash or command prompt.
 
+## Installing dependent packages
+
+Please install [fasteners 0.14.1](https://pypi.python.org/pypi/fasteners).
+
+```bash
+pip install fasteners==0.14.1
+```
+
+or
+
+Add 'fasteners==0.14.1' to your 'requirements.txt' and install.
+
 ## Usage
 
 ```bash
@@ -55,6 +67,7 @@ The applicable function has the following restrictions.
 
 * Pure function
 * Arguments are string type, numeric type, etc. (Not supported: list type, dict type, set type, file objects etc.)
+* Not supported: Mutual recursive function in multiple threads (Dining Philosophers Problem).
 
 The cache data output folder is as follows.
 

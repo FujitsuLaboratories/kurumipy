@@ -202,6 +202,27 @@ class TestMemoDecorator(unittest.TestCase):
         self.assertEqual(15, f(5))
         self.assertEqual((1+10+1+5+1, 0, initial_invalidates), get_stats(f))
 
+    def test_mutual_recursive_function(self):
+        @memo_decorator.memo
+        def f(n):
+            if n > 0:
+                return 1+g(n-1)
+            else:
+                return 0
+        @memo_decorator.memo
+        def g(n):
+            if n > 0:
+                return 1+f(n-1)
+            else:
+                return 0
+        f(0)
+        g(0)
+        initial_invalidates_f = f.invalidates
+        initial_invalidates_g = g.invalidates
+        self.assertEqual(3, f(3))
+        self.assertEqual((1+2, 0, initial_invalidates_f), get_stats(f))
+        self.assertEqual((1+2, 1, initial_invalidates_g), get_stats(g))
+
     def test_global_function_usage(self):
         @memo_decorator.memo
         def f(x):
@@ -251,6 +272,50 @@ class TestMemoDecorator(unittest.TestCase):
         for i in range(10):
             time.sleep(0.1)
             free = i
+        for t in callers:
+            t.stop()
+            t.join()
+        for t in callers:
+            self.assertIsNone(t.lastError)
+
+    @unittest.skip("No support for lock ordering")
+    def test_multithread_mutual_recursive(self):
+        @memo_decorator.memo
+        def f(n):
+            if n > 0:
+                return 1+g(n-1)
+            else:
+                return 0
+        @memo_decorator.memo
+        def g(n):
+            if n > 0:
+                return 1+f(n-1)
+            else:
+                return 0
+        f(0)
+        g(0)
+        initial_invalidates_f = f.invalidates
+        initial_invalidates_g = g.invalidates
+        class Caller(threading.Thread):
+            def __init__(self, entry):
+                threading.Thread.__init__(self)
+                self.entry = entry
+                self.stopRequested = False
+                self.lastError = None
+            def run(self):
+                i = 0
+                while not self.stopRequested:
+                    try:
+                        self.entry(2 * i)
+                    except Exception as e:
+                        self.lastError = e
+                    i += 1
+            def stop(self):
+                self.stopRequested = True
+        callers = [Caller(f), Caller(g)]
+        for t in callers:
+            t.start()
+        time.sleep(1)
         for t in callers:
             t.stop()
             t.join()
