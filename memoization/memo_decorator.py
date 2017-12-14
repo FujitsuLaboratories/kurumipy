@@ -3,12 +3,12 @@ import re
 import shutil
 import threading
 import fasteners
-from .file_operation import get_hash, file_write, file_read, try_file_read
+from .file_operation import get_hash, file_write, file_read, try_file_read, dir_make
 from .func_analyzer import get_load_globals, get_load_deref
 
-# メモ化のキャッシュファイル置き場ディレクトリのパス
-memo_dir = os.path.join(os.path.dirname(__file__), 'memocache', 'cache')
-lock_dir = os.path.join(os.path.dirname(__file__), 'memocache', 'lock')
+# メモ化のキャッシュファイルと排他制御用のロックファイルの置き場ディレクトリのパス
+MEMO_DIR = os.path.join(os.path.dirname(__file__), 'memocache', 'cache')
+LOCK_DIR = os.path.join(os.path.dirname(__file__), 'memocache', 'lock')
 
 def key_value_list_to_dict(l):
     d = dict()
@@ -23,8 +23,6 @@ def key_value_list_to_dict(l):
             h = hash(i[1])
         d[i[0]] = h
     return d
-
-memo_dir_lock = threading.Lock()
 
 class ReentrantInterprocessLock():
     def __init__(self, lock_path):
@@ -62,29 +60,16 @@ class ReentrantInterprocessLock():
 # メモ化用のデコレータ
 def memo(function):
     # メモ化用のキャッシュを置くディレクトリがなければ作成
-    if not os.path.isdir(memo_dir):
-        with memo_dir_lock:
-            if not os.path.isdir(memo_dir):
-                try:
-                    os.makedirs(memo_dir)
-                except:
-                    pass
-
+    dir_make(MEMO_DIR)
     # 排他制御用のロックファイルを置くディレクトリがなければ作成
-    if not os.path.isdir(lock_dir):
-        with memo_dir_lock:
-            if not os.path.isdir(lock_dir):
-                try:
-                    os.makedirs(lock_dir)
-                except:
-                    pass
+    dir_make(LOCK_DIR)
 
     # キャッシュファイル関係のパス名生成
     qualified_name = function.__qualname__
     escaped_qname = re.sub(r'[<>]', '_', qualified_name)
-    func_dir = os.path.join(memo_dir, escaped_qname)
+    func_dir = os.path.join(MEMO_DIR, escaped_qname)
     env_path = os.path.join(func_dir, 'env.pickle')
-    lock_path = os.path.join(lock_dir, escaped_qname)
+    lock_path = os.path.join(LOCK_DIR, escaped_qname)
 
     def _memo(*args, **kwargs):
         _memo.calls += 1
