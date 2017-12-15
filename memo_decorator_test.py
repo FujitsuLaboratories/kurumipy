@@ -244,6 +244,22 @@ class TestMemoDecorator(unittest.TestCase):
             return GlobalClass.__name__ + s
         self.assertEqual("GlobalClass-1", f("-1"))
 
+    def test_exception_handling(self):
+        @memo_decorator.memo
+        def f(n):
+            if n == 0:
+                raise ValueError()
+            return f(n-1)
+        with self.assertRaises(ValueError):
+            f(1)
+        self.assertEqual(2, f.calls)
+        with self.assertRaises(ValueError):
+            f(2)
+        self.assertEqual(2+3, f.calls)
+        # TODO should not know implementation details
+        self.assertEqual(0, f.lock.thread_id)
+        self.assertEqual(0, f.lock.recursion_count)
+
     def test_multithread_safety(self):
         free = 0
         @memo_decorator.memo
