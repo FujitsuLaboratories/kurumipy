@@ -70,6 +70,10 @@ python -m unittest discover -p *_test.py
 python main.py
 ```
 
+## Related project
+
+* [IncPy](http://www.pgbovine.net/incpy.html)
+
 ## License
 
 Apache License 2.0
