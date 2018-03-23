@@ -3,7 +3,7 @@ import re
 import shutil
 import threading
 import fasteners
-from .file_operation import get_hash, file_write, file_read, try_file_read, dir_make
+from .file_operation import get_hash, file_write, file_read, try_file_read, makedirs_safe
 from .func_analyzer import get_load_globals, get_load_deref
 
 # メモ化のキャッシュファイルと排他制御用のロックファイルの置き場ディレクトリのパス
@@ -60,9 +60,9 @@ class ReentrantInterprocessLock():
 # メモ化用のデコレータ
 def memo(function):
     # メモ化用のキャッシュを置くディレクトリがなければ作成
-    dir_make(MEMO_DIR)
+    makedirs_safe(MEMO_DIR)
     # 排他制御用のロックファイルを置くディレクトリがなければ作成
-    dir_make(LOCK_DIR)
+    makedirs_safe(LOCK_DIR)
 
     # キャッシュファイル関係のパス名生成
     qualified_name = function.__qualname__

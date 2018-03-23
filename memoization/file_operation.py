@@ -15,19 +15,16 @@ def file_write(path, data):
 def file_read(path):
     """Deserialize from a file and return an object"""
     with open(path, mode='rb') as f:
-        result = pickle.load(f)
-    return result 
+        return pickle.load(f)
 
 def try_file_read(path):
     """Try to deserialize from a file and return a tuple of boolean and object"""
     if os.path.isfile(path):
-        with open(path, mode='rb') as f:
-            result = pickle.load(f)
-            return True, result
+        return True, file_read(path)
     return False, None
 
 DIR_LOCK = threading.Lock()
-def dir_make(dirpath):
+def makedirs_safe(dirpath):
     """Thread-safe version of makedirs"""
     if not os.path.isdir(dirpath):
         with DIR_LOCK:
@@ -35,4 +32,4 @@ def dir_make(dirpath):
                 try:
                     os.makedirs(dirpath)
                 except:
-                    pass
+                    pass # Another thread has created the directory
