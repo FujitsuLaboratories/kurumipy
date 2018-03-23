@@ -6,6 +6,10 @@ Kurumi stands for walnut in Japanese. They say walnuts improve memory.
 
 ## Setting up
 
+### Python 3
+
+Supported versions of Python are 3.x.
+
 ### Installing dependent packages
 
 Please install [fasteners 0.14.1](https://pypi.python.org/pypi/fasteners).
@@ -18,7 +22,7 @@ or
 
 Add 'fasteners==0.14.1' to your 'requirements.txt' and install.
 
-### How to apply to other projects
+### How to apply to your project
 
 Copy 'memoization' folder to your project, then import the module.
 Write a decorator to functions to enable memoization.
