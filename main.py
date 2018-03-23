@@ -1,6 +1,6 @@
 import time
 from contextlib import contextmanager
-import memoization.memo_decorator as memo_decorator
+from memoization.memo_decorator import memo
 import threading
 
 @contextmanager
@@ -13,14 +13,14 @@ def stopwatch(format_str):
 
 globalda = 120
 
-@memo_decorator.memo
+@memo
 def memo_test(n):
     total = 0
     for num in range(1, 10000000):
         total = total + num
     return total
 
-@memo_decorator.memo
+@memo
 def memo_test2(n, b, c):
     total = globalda
     for num in range(1, 10000000):
@@ -34,7 +34,7 @@ class testArgs:
         self.selected_filter = selected_filter
 
 free = 0
-@memo_decorator.memo
+@memo
 def f(i):
     return free + i
 class Caller(threading.Thread):
@@ -55,7 +55,7 @@ class Caller(threading.Thread):
     def stop(self):
         self.stopRequested = True
 
-@memo_decorator.memo
+@memo
 def recursion(n):
     if n <= 0:
         return 0

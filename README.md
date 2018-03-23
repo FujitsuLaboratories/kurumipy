@@ -28,9 +28,9 @@ Copy 'memoization' folder to your project, then import the module.
 Write a decorator to functions to enable memoization.
 
 ```python
-import memoization.memo_decorator as memo_decorator
+from memoization.memo_decorator import memo
 
-@memo_decorator.memo
+@memo
 def your_function(n):
     # ...
 ```
