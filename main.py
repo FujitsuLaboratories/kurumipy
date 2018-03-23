@@ -27,12 +27,6 @@ def memo_test2(n, b, c):
         total = total + num
     return total
 
-class testArgs:
-    def __init__(self, filename, sampling_rate, selected_filter):
-        self.filename = filename
-        self.sampling_rate = sampling_rate
-        self.selected_filter = selected_filter
-
 free = 0
 @memo
 def f(i):
