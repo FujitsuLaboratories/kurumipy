@@ -1,7 +1,7 @@
 import time
 from contextlib import contextmanager
-from memoization.memo_decorator import memo
 import threading
+from memoization.memo_decorator import memo
 
 @contextmanager
 def stopwatch(format_str):
@@ -79,7 +79,7 @@ if __name__ == '__main__':
         t.stop()
         t.join()
     for t in callers:
-       print(t.lastError)
+        print(t.lastError)
 
     # Test recursive function
     recursion(2)

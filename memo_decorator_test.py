@@ -1,8 +1,8 @@
 import unittest
-from memoization.memo_decorator import memo
 import time
 from functools import reduce
 import threading
+from memoization.memo_decorator import memo
 
 def get_stats(f):
     return (f.calls, f.hits, f.invalidates)
