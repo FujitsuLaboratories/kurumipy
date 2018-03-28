@@ -4,6 +4,18 @@ KurumiPy is an enhanced memoization library.
 
 Kurumi stands for walnut in Japanese. They say walnuts improve memory.
 
+## Features
+
+Usual memoizations keep return values associated with arguments only.
+KurumiPy provides an enhanced memoization with features following.
+
+* Changes in your function
+  * KurumiPy automatically invalidates cache when you change implementation of the target function. It is useful for test-driven development.
+* Changes in dependent variables
+  * KurumiPy automatically invalidates cache when any dependent variables of the target function have been changed. It is useful if you modify parameters and re-execute your program.
+* Inter-process
+  * KurumiPy shares cache amoung processes. Even if your program runs in multiple processes, KurumiPy handles cache correctly.
+
 ## Setting up
 
 ### Python 3
